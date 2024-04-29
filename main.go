@@ -98,18 +98,25 @@ func tokenize(f *os.File) []Token {
 }
 
 func parse(tokens []Token) error {
-	nBeginObject := 0
-	nEndObject := 0
-
 	if len(tokens) == 0 || tokens[0].Type != BeginObject {
 		return errors.New("not an object")
 	}
 
-	for _, t := range tokens {
+	nBeginObject := 1
+	nEndObject := 0
+	for i := 1; i < len(tokens); i++ {
+		t := tokens[i]
+		tPrev := tokens[i-1]
 		fmt.Println(t) // TODO: delete
+
+		if (tPrev.Type == BeginObject || tPrev.Type == ValueSeparator) && t.Type != String {
+			return errors.New("non-string key")
+		}
+
 		switch t.Type {
 		case BeginObject:
 			nBeginObject++
+
 		case EndObject:
 			if nBeginObject == 0 {
 				return errors.New("unexpected closing brace")
