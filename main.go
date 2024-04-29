@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type TokenType int
@@ -67,10 +68,29 @@ func tokenize(f *os.File) []Token {
 	s.Split(bufio.ScanRunes)
 
 	tokens := []Token{}
+	inString := false
+	strBuilder := strings.Builder{}
 	for s.Scan() {
 		c := s.Text()
 		if tokenType, ok := TokenMap[s.Text()]; ok {
 			tokens = append(tokens, Token{Type: tokenType, Value: c})
+			continue
+		}
+
+		if c == "\"" && inString {
+			inString = false
+			tokens = append(tokens, Token{Type: String, Value: strBuilder.String()})
+			continue
+		}
+
+		if c == "\"" && !inString {
+			inString = true
+			strBuilder.Reset()
+			continue
+		}
+
+		if inString {
+			strBuilder.Write([]byte(c))
 		}
 	}
 
@@ -86,6 +106,7 @@ func parse(tokens []Token) error {
 	}
 
 	for _, t := range tokens {
+		fmt.Println(t) // TODO: delete
 		switch t.Type {
 		case BeginObject:
 			nBeginObject++
