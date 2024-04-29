@@ -6,16 +6,20 @@ import (
 	"os"
 )
 
-type Token int
+type TokenType int
 
 const (
-	OpenBrace    Token = iota // Opening curly brace `{` token
-	CloseBrace                // Closing curly brace `}` token
-	OpenBracket               // Opening square bracket `[` token
-	CloseBracket              // Closing square bracket `]` token
-	True                      // Boolean `true` token
-	False                     // Boolean `false` token
-	Null                      // `null` token
+	BeginObject    TokenType = iota // Opening curly brace `{` token
+	EndObject                       // Closing curly brace `}` token
+	BeginArray                      // Opening square bracket `[` token
+	EndArray                        // Closing square bracket `]` token
+	NameSeparator                   // Colon `:` token
+	ValueSeparator                  // Comma `,` token
+	True                            // Boolean `true` token
+	False                           // Boolean `false` token
+	Null                            // `null` token
+	String
+	Number
 )
 
 func main() {
