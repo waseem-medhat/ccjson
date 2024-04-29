@@ -41,13 +41,13 @@ func main() {
 	}
 	defer f.Close()
 
-	err = isValid(tokenize(f))
+	err = parse(tokenize(f))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	fmt.Println("Valid JSON")
+	fmt.Println("valid JSON")
 }
 
 func tokenize(f *os.File) []Token {
@@ -77,9 +77,13 @@ func tokenize(f *os.File) []Token {
 	return tokens
 }
 
-func isValid(tokens []Token) error {
+func parse(tokens []Token) error {
 	nBeginObject := 0
 	nEndObject := 0
+
+	if len(tokens) == 0 || tokens[0].Type != BeginObject {
+		return errors.New("not an object")
+	}
 
 	for _, t := range tokens {
 		switch t.Type {
