@@ -48,6 +48,10 @@ func tokenize(f *os.File) []Token {
 	strBuilder := strings.Builder{}
 	for s.Scan() {
 		c := s.Text()
+		if strings.TrimSpace(c) == "" {
+			continue
+		}
+
 		if tokenType, ok := TokenMap[s.Text()]; ok {
 			tokens = append(tokens, Token{Type: tokenType, Value: c})
 			continue

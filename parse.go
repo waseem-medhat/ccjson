@@ -5,9 +5,13 @@ import (
 	"fmt"
 )
 
-func parse(tokens []Token) error {
-	if len(tokens) == 0 || tokens[0].Type != BeginObject {
-		return errors.New("not an object")
+func parseObject(tokens []Token) error {
+	if len(tokens) == 0 {
+		return fmt.Errorf("empty input")
+	}
+
+	if tokens[0].Type != BeginObject {
+		return errors.New("no opening brace")
 	}
 
 	nBeginObject := 1
@@ -18,11 +22,11 @@ func parse(tokens []Token) error {
 		// fmt.Println(t) // TODO: delete
 
 		if tPrev.Type == ValueSeparator && t.Type != String {
-			return fmt.Errorf("unexpected token: %v", t.Value)
+			return fmt.Errorf("unexpected token '%v' after value separator", t.Value)
 		}
 
 		if tPrev.Type == BeginObject && !(t.Type == String || t.Type == EndObject) {
-			return fmt.Errorf("unexpected token: %v", t.Value)
+			return fmt.Errorf("unexpected token %v after opening brace", t.Value)
 		}
 
 		switch t.Type {

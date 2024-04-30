@@ -18,7 +18,7 @@ func run(subtests []subtest, t *testing.T) {
 		}
 		defer f.Close()
 
-		err = parse(tokenize(f))
+		err = parseObject(tokenize(f))
 		if err != nil && st.isValid {
 			t.Fatalf("valid %v got error: %v", st.fileName, err)
 		}

@@ -18,7 +18,7 @@ func main() {
 	}
 	defer f.Close()
 
-	err = parse(tokenize(f))
+	err = parseObject(tokenize(f))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
