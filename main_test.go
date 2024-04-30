@@ -48,3 +48,12 @@ func TestStep2(t *testing.T) {
 
 	run(subtests, t)
 }
+
+func TestStep3(t *testing.T) {
+	subtests := []subtest{
+		{fileName: "tests/step3/valid.json", isValid: true},
+		{fileName: "tests/step3/invalid.json", isValid: false},
+	}
+
+	run(subtests, t)
+}

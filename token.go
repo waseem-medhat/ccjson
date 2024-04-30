@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -27,7 +28,7 @@ const (
 	Number
 )
 
-func tokenize(f *os.File) []Token {
+func tokenize(f *os.File) ([]Token, error) {
 	TokenMap := map[string]TokenType{
 		"{":     BeginObject,
 		"}":     EndObject,
@@ -46,13 +47,10 @@ func tokenize(f *os.File) []Token {
 	tokens := []Token{}
 	inString := false
 	strBuilder := strings.Builder{}
+	literalBuilder := strings.Builder{}
 	for s.Scan() {
 		c := s.Text()
-		if strings.TrimSpace(c) == "" {
-			continue
-		}
-
-		if tokenType, ok := TokenMap[s.Text()]; ok {
+		if tokenType, ok := TokenMap[c]; ok {
 			tokens = append(tokens, Token{Type: tokenType, Value: c})
 			continue
 		}
@@ -60,19 +58,41 @@ func tokenize(f *os.File) []Token {
 		if c == "\"" && inString {
 			inString = false
 			tokens = append(tokens, Token{Type: String, Value: strBuilder.String()})
+			strBuilder.Reset()
 			continue
 		}
 
 		if c == "\"" && !inString {
 			inString = true
-			strBuilder.Reset()
 			continue
 		}
 
 		if inString {
 			strBuilder.Write([]byte(c))
+			continue
 		}
+
+		if _, ok := TokenMap[c]; ok || strings.TrimSpace(c) == "" {
+			newLiteral := literalBuilder.String()
+			if newLiteral == "" {
+				continue
+			}
+
+			if tokenType, ok := TokenMap[newLiteral]; ok {
+				tokens = append(tokens, Token{Type: tokenType, Value: newLiteral})
+				literalBuilder.Reset()
+				continue
+			}
+
+			return tokens, fmt.Errorf("unexpected literal %v", newLiteral)
+		}
+
+		literalBuilder.Write([]byte(c))
 	}
 
-	return tokens
+	for _, t := range tokens {
+		fmt.Println(t.Value)
+	}
+
+	return tokens, nil
 }
