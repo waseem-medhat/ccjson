@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -40,11 +41,6 @@ func tokenize(f *os.File) ([]Token, error) {
 	literalBuilder := strings.Builder{}
 	for s.Scan() {
 		c := s.Text()
-		if tokenType, ok := tokenMap[c]; ok {
-			tokens = append(tokens, Token{Type: tokenType, Value: c})
-			continue
-		}
-
 		if c == "\"" && inString {
 			inString = false
 			tokens = append(tokens, Token{Type: String, Value: strBuilder.String()})
@@ -62,25 +58,45 @@ func tokenize(f *os.File) ([]Token, error) {
 			continue
 		}
 
-		if _, ok := tokenMap[c]; ok || strings.TrimSpace(c) == "" {
-			newLiteral := literalBuilder.String()
-			if newLiteral == "" {
-				continue
+		if tokenType, ok := tokenMap[c]; ok || strings.TrimSpace(c) == "" {
+			literal := strings.TrimSpace(literalBuilder.String())
+			newToken, err := tokenizeLiteral(literal)
+			if err != nil && err.Error() == "invalid literal" {
+				return tokens, fmt.Errorf("tokenization error: %v %v", err, literal)
 			}
 
-			if tokenType, ok := tokenMap[newLiteral]; ok {
-				tokens = append(tokens, Token{Type: tokenType, Value: newLiteral})
+			if err == nil {
+				tokens = append(tokens, newToken)
 				literalBuilder.Reset()
-				continue
 			}
 
-			return tokens, fmt.Errorf("unexpected literal %v", newLiteral)
+			if ok {
+				tokens = append(tokens, Token{Type: tokenType, Value: c})
+			}
+			continue
 		}
 
 		literalBuilder.Write([]byte(c))
 	}
 
 	return tokens, nil
+}
+
+func tokenizeLiteral(literal string) (Token, error) {
+	if literal == "" {
+		return Token{}, fmt.Errorf("empty input")
+	}
+
+	tokenMap := validTokens()
+	if tokenType, ok := tokenMap[literal]; ok {
+		return Token{Type: tokenType, Value: literal}, nil
+	}
+
+	if _, err := strconv.ParseFloat(literal, 64); err == nil {
+		return Token{Type: Number, Value: literal}, nil
+	}
+
+	return Token{}, fmt.Errorf("invalid literal")
 }
 
 func validTokens() map[string]TokenType {

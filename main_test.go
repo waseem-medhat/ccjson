@@ -24,6 +24,15 @@ func run(subtests []subtest, t *testing.T) {
 			t.Fatalf("%v with valid tokens got error: %v", st.fileName, err)
 		}
 
+		if err == nil && !st.validTokens {
+			t.Fatalf("%v with invalid tokens passed tokenization", st.fileName)
+		}
+
+		// files that failed tokenization won't be parsed
+		if err != nil {
+			return
+		}
+
 		err = parseObject(tokens)
 		if err != nil && st.validJSON {
 			t.Fatalf("valid %v got error: %v", st.fileName, err)
