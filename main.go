@@ -21,9 +21,7 @@ func main() {
 	tokens, err := tokenize(f)
 
 	if os.Getenv("DEBUG") == "true" {
-		for _, t := range tokens {
-			fmt.Println(t.Value)
-		}
+		debugTokens(tokens)
 	}
 
 	if err != nil {
@@ -38,4 +36,24 @@ func main() {
 	}
 
 	fmt.Println("valid JSON")
+}
+
+func debugTokens(tokens []Token) {
+	typeMap := map[TokenType]string{
+		BeginObject:    "BeginObject",
+		EndObject:      "EndObject",
+		BeginArray:     "BeginArray",
+		EndArray:       "EndArray",
+		NameSeparator:  "NameSeparator",
+		ValueSeparator: "ValueSeparator",
+		True:           "True",
+		False:          "False",
+		Null:           "Null",
+		String:         "String",
+		Number:         "Number",
+	}
+
+	for _, t := range tokens {
+		fmt.Printf("%14s | %s\n", typeMap[t.Type], t.Value)
+	}
 }
