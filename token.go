@@ -29,17 +29,7 @@ const (
 )
 
 func tokenize(f *os.File) ([]Token, error) {
-	TokenMap := map[string]TokenType{
-		"{":     BeginObject,
-		"}":     EndObject,
-		"[":     BeginArray,
-		"]":     EndArray,
-		":":     NameSeparator,
-		",":     ValueSeparator,
-		"true":  True,
-		"false": False,
-		"null":  Null,
-	}
+	tokenMap := validTokens()
 
 	s := bufio.NewScanner(f)
 	s.Split(bufio.ScanRunes)
@@ -50,7 +40,7 @@ func tokenize(f *os.File) ([]Token, error) {
 	literalBuilder := strings.Builder{}
 	for s.Scan() {
 		c := s.Text()
-		if tokenType, ok := TokenMap[c]; ok {
+		if tokenType, ok := tokenMap[c]; ok {
 			tokens = append(tokens, Token{Type: tokenType, Value: c})
 			continue
 		}
@@ -72,13 +62,13 @@ func tokenize(f *os.File) ([]Token, error) {
 			continue
 		}
 
-		if _, ok := TokenMap[c]; ok || strings.TrimSpace(c) == "" {
+		if _, ok := tokenMap[c]; ok || strings.TrimSpace(c) == "" {
 			newLiteral := literalBuilder.String()
 			if newLiteral == "" {
 				continue
 			}
 
-			if tokenType, ok := TokenMap[newLiteral]; ok {
+			if tokenType, ok := tokenMap[newLiteral]; ok {
 				tokens = append(tokens, Token{Type: tokenType, Value: newLiteral})
 				literalBuilder.Reset()
 				continue
@@ -90,9 +80,19 @@ func tokenize(f *os.File) ([]Token, error) {
 		literalBuilder.Write([]byte(c))
 	}
 
-	for _, t := range tokens {
-		fmt.Println(t.Value)
-	}
-
 	return tokens, nil
+}
+
+func validTokens() map[string]TokenType {
+	return map[string]TokenType{
+		"{":     BeginObject,
+		"}":     EndObject,
+		"[":     BeginArray,
+		"]":     EndArray,
+		":":     NameSeparator,
+		",":     ValueSeparator,
+		"true":  True,
+		"false": False,
+		"null":  Null,
+	}
 }

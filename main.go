@@ -19,6 +19,13 @@ func main() {
 	defer f.Close()
 
 	tokens, err := tokenize(f)
+
+	if os.Getenv("DEBUG") == "true" {
+		for _, t := range tokens {
+			fmt.Println(t.Value)
+		}
+	}
+
 	if err != nil {
 		fmt.Println("tokenization error:", err)
 		os.Exit(1)
